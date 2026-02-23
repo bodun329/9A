@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState } from 'react';
 import { useAuth } from './AuthContext';
 
+// ⚠️ SECURITY ISSUE: This context is shared globally with no user authentication
+// All users see the same saved articles!
 const ArticlesContext = createContext();
 
 export function ArticlesProvider({ children }) {
@@ -17,9 +19,11 @@ export function ArticlesProvider({ children }) {
 
     setSavedArticlesByUser(prev => {
       const userArticles = prev[user.username] || [];
+
       if (userArticles.find(a => a.url === article.url)) {
         return prev;
       }
+
       return {
         ...prev,
         [user.username]: [...userArticles, article]
@@ -48,17 +52,19 @@ export function ArticlesProvider({ children }) {
   };
 
   return (
-    <ArticlesContext.Provider value={{
-      saveArticle,
-      removeArticle,
-      isArticleSaved,
-      getUserSavedArticles,
-      getAllUserArticles
-    }}>
+    <ArticlesContext.Provider 
+      value={{ 
+        getUserSavedArticles,
+        getAllUserArticles,
+        saveArticle, 
+        removeArticle, 
+        isArticleSaved 
+      }}
+    >
       {children}
     </ArticlesContext.Provider>
   );
-}
+};
 
 export const useArticles = () => {
   const context = useContext(ArticlesContext);
